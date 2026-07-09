@@ -1,4 +1,4 @@
-name: Build and Deploy to cPanel
+name: Build & Deploy Jaspr to cPanel
 
 on:
   push:
@@ -8,144 +8,69 @@ on:
   workflow_dispatch:
 
 jobs:
-  deploy:
+  build-deploy:
     runs-on: ubuntu-latest
 
-    env:
-      RELEASE_NAME: release-${{ github.run_number }}-${{ github.run_attempt }}
-
     steps:
-
-      ##################################################
-      # Checkout Repository
-      ##################################################
-
-      - name: Checkout Repository
+      # 1. Checkout source code
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      ##################################################
-      # Setup Dart SDK
-      ##################################################
 
-      - name: Setup Dart
+      # 2. Setup Dart
+      - name: Setup Dart SDK
         uses: dart-lang/setup-dart@v1
         with:
           sdk: "3.12.0"
 
-      ##################################################
-      # Install Workspace Dependencies
-      ##################################################
 
-      - name: Install Workspace Dependencies
+      # 3. Install Jaspr CLI
+      - name: Install Jaspr CLI
+        run: |
+          dart pub global activate jaspr_cli 0.23.1
+          echo "$HOME/.pub-cache/bin" >> $GITHUB_PATH
+
+
+      # 4. Install dependencies
+      - name: Get dependencies
         run: dart pub get
 
-      ##################################################
-      # Verify Workspace (Optional)
-      ##################################################
 
-      - name: Verify Workspace
+      # 5. Build Jaspr
+      - name: Build Jaspr site
         run: |
-          dart pub workspace list
+          jaspr build
 
-      ##################################################
-      # Build Deffcon
-      ##################################################
 
-      - name: Build Website
-        working-directory: deffcon
-        run: |
-          dart run jaspr_cli:jaspr build
-
-      ##################################################
-      # Setup SSH
-      ##################################################
-
+      # 6. Prepare SSH
       - name: Setup SSH
         run: |
           mkdir -p ~/.ssh
 
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          echo "${{ secrets.CPANEL_SSH_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
 
-          ssh-keyscan \
-            -p ${{ secrets.PORT }} \
-            ${{ secrets.HOST }} >> ~/.ssh/known_hosts
+          ssh-keyscan -p ${{ secrets.CPANEL_PORT }} \
+          ${{ secrets.CPANEL_HOST }} >> ~/.ssh/known_hosts
 
-      ##################################################
-      # Create Release Folder
-      ##################################################
 
-      - name: Create Release Folder
+      # 7. Deploy menggunakan SCP
+      - name: Upload to cPanel
         run: |
-          ssh \
-            -i ~/.ssh/id_rsa \
-            -p ${{ secrets.PORT }} \
-            ${{ secrets.USERNAME }}@${{ secrets.HOST }} << EOF
 
-          mkdir -p ~/releases/${RELEASE_NAME}
-          mkdir -p ~/backups
+          scp -r \
+          -P ${{ secrets.CPANEL_PORT }} \
+          build/jaspr/* \
+          ${{ secrets.CPANEL_USER }}@${{ secrets.CPANEL_HOST }}:${{ secrets.CPANEL_PATH }}
 
-          EOF
 
-      ##################################################
-      # Upload Build
-      ##################################################
+      # 8. Optional: cleanup old files
+      # Jika ingin hapus file lama sebelum upload,
+      # aktifkan bagian ini
 
-      - name: Upload Build
-        run: |
-          scp \
-            -i ~/.ssh/id_rsa \
-            -P ${{ secrets.PORT }} \
-            -r deffcon/build/jaspr/. \
-            ${{ secrets.USERNAME }}@${{ secrets.HOST }}:~/releases/${RELEASE_NAME}/
-
-      ##################################################
-      # Deploy Website
-      ##################################################
-
-      - name: Deploy Website
-        run: |
-          ssh \
-            -i ~/.ssh/id_rsa \
-            -p ${{ secrets.PORT }} \
-            ${{ secrets.USERNAME }}@${{ secrets.HOST }} << 'EOF'
-
-          set -e
-
-          BACKUP=~/backups/backup-$(date +%Y%m%d-%H%M%S)
-
-          mkdir -p "$BACKUP"
-
-          shopt -s dotglob
-
-          for item in ~/public_html/*; do
-
-            name=$(basename "$item")
-
-            case "$name" in
-              cgi-bin|.well-known|.htaccess|.user.ini|php.ini)
-                ;;
-              *)
-                cp -a "$item" "$BACKUP/"
-                ;;
-            esac
-
-          done
-
-          find ~/public_html -mindepth 1 \
-            ! -name "cgi-bin" \
-            ! -name ".well-known" \
-            ! -name ".htaccess" \
-            ! -name ".user.ini" \
-            ! -name "php.ini" \
-            -exec rm -rf {} +
-
-          cp -a ~/releases/${RELEASE_NAME}/. ~/public_html/
-
-          rm -rf ~/releases/${RELEASE_NAME}
-
-          find ~/backups -maxdepth 1 -type d -mtime +7 -exec rm -rf {} +
-
-          find ~/releases -maxdepth 1 -type d -mtime +7 -exec rm -rf {} +
-
-          EOF
+      # - name: Clean cPanel directory
+      #   run: |
+      #     ssh \
+      #     -p ${{ secrets.CPANEL_PORT }} \
+      #     ${{ secrets.CPANEL_USER }}@${{ secrets.CPANEL_HOST }} \
+      #     "rm -rf ${{ secrets.CPANEL_PATH }}/*"
