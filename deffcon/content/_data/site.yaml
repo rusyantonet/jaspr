@@ -1,0 +1,12 @@
+# Site Configuration
+titleBase: DEFFCON
+favicon: favicon.ico
+
+# Social media links
+social:
+  - name: Github
+    url: https://github.com/rusyantonet
+  - name: LinkedIn
+    url: https://linkedin.com/in/rusyanto
+  - name: Instagram
+    url: https://instagram.com/gypsyonfifo

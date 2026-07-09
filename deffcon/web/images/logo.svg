@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Uploaded to: SVG Repo, www.svgrepo.com, Generator: SVG Repo Mixer Tools -->
+
+<svg
+   fill="#000000"
+   width="800"
+   height="800"
+   viewBox="0 0 24 24"
+   role="img"
+   version="1.1"
+   id="svg1"
+   sodipodi:docname="drooble-svgrepo-com.svg"
+   inkscape:export-filename="..\OneDrive\Desktop\drooble-svgrepo.svg"
+   inkscape:export-xdpi="96"
+   inkscape:export-ydpi="96"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs1" />
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:export-bgcolor="#ffffff00">
+    <inkscape:page
+       x="0"
+       y="0"
+       width="24"
+       height="24"
+       id="page2"
+       margin="0"
+       bleed="0" />
+  </sodipodi:namedview>
+  <title
+     id="title1">Drooble icon</title>
+  <path
+     d="M 24,11.986 A 7.599,7.599 0 0 0 17,4.427 v 7.574 a 5,5 0 0 1 -10,0 C 7,8.397 10.707,5.979 14,7.418 V 0.17 C 6.615,-1.069 0,4.63 0,12 c 0,6.628 5.373,12 12,12 6.628,0 12,-5.372 12,-12 v -0.014 m -14,0.015 a 2,2 0 1 0 4,0 2,2 0 0 0 -4,0 M 24,11.986 A 7.599,7.599 0 0 0 17,4.427 v 7.574 a 5,5 0 0 1 -10,0 C 7,8.397 10.707,5.979 14,7.418 V 0.17 C 6.615,-1.069 0,4.63 0,12 c 0,6.628 5.373,12 12,12 6.628,0 12,-5.372 12,-12 v -0.014 m -14,0.015 a 2,2 0 1 0 4,0 2,2 0 0 0 -4,0 z"
+     id="path1"
+     style="fill:#2563eb;fill-opacity:1" />
+  <ellipse
+     style="fill:#ffffff;fill-opacity:0.738462;stroke-width:0.00555181"
+     id="path2"
+     cx="12.909791"
+     cy="11.024158"
+     rx="0.36555234"
+     ry="0.35184407" />
+  <ellipse
+     style="fill:#ffffff;fill-opacity:0.757692;stroke-width:0.00813845"
+     id="path2-8"
+     cx="12.815343"
+     cy="11.148896"
+     rx="0.53586727"
+     ry="0.51577216" />
+</svg>
