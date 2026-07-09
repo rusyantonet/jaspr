@@ -1,0 +1,76 @@
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - main
+      - next
+    paths:
+      - '.github/workflows/test.yml'
+      - 'apps/**'
+      - 'examples/**'
+      - 'packages/**'
+      - 'pubspec.lock'
+  push:
+    branches:
+      - main
+      - next
+    paths:
+      - '.github/workflows/test.yml'
+      - 'apps/**'
+      - 'examples/**'
+      - 'packages/**'
+      - 'pubspec.lock'
+
+name: Test Pipeline
+
+jobs:
+  analyze:
+    name: Analyze Code
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v5
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      - name: Bootstrap
+        run: |
+          flutter doctor
+          dart pub global activate melos
+          melos bootstrap
+          jaspr --disable-analytics
+
+      - name: Check formatting
+        run: melos run format
+
+      - name: Check linting
+        run: melos run analyze
+
+  test:
+    name: Test Packages
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v5
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+
+      - name: Bootstrap
+        run: |
+          dart pub global activate melos
+          dart pub global activate coverage
+          melos bootstrap --no-private
+          jaspr --disable-analytics
+
+      - name: Run Unit tests
+        run: melos run coverage --no-select
+
+      - name: Upload Coverage
+        uses: codecov/codecov-action@v3
+        with:
+          files: coverage/*_lcov.info
+          token: ${{ secrets.CODECOV_TOKEN }}

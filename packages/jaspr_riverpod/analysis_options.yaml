@@ -1,0 +1,5 @@
+include: package:jaspr_repo/package.yaml
+
+linter:
+  rules:
+    avoid_types_as_parameter_names: false

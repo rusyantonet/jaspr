@@ -1,0 +1,5 @@
+include: package:jaspr_repo/app.yaml
+
+analyzer:
+  errors:
+    directives_ordering: ignore

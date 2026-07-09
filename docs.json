@@ -1,0 +1,510 @@
+{
+  "$schema": "https://docs.page/schema.json",
+  "name": "Jaspr",
+  "logo": {
+    "light": "https://raw.githubusercontent.com/schultek/jaspr/refs/heads/main/assets/logo.png",
+    "dark": "https://raw.githubusercontent.com/schultek/jaspr/refs/heads/main/assets/logo_outline.png"
+  },
+  "favicon": "https://raw.githubusercontent.com/schultek/jaspr/refs/heads/main/assets/favicon.png",
+  "anchors": [
+    {
+      "title": "Website",
+      "icon": "globe",
+      "href": "https://jaspr.site"
+    },
+    {
+      "title": "Discord",
+      "icon": "discord",
+      "href": "https://discord.gg/XGXrGEk4c6"
+    },
+    {
+      "title": "Playground",
+      "icon": "code",
+      "href": "https://playground.jaspr.site"
+    }
+  ],
+  "social": {
+    "x": "@schultek_dev",
+    "github": "schultek",
+    "website": "https://jaspr.site",
+    "discord": "XGXrGEk4c6"
+  },
+  "theme": {
+    "primary": "#01589B",
+    "primaryDark": "#41C3FE"
+  },
+  "tabs": [
+    {
+      "id": "root",
+      "title": "Docs",
+      "href": "/"
+    },
+    {
+      "id": "guides",
+      "title": "Guides",
+      "href": "/guides"
+    },
+    {
+      "id": "content",
+      "title": "Content",
+      "href": "/content"
+    },
+    {
+      "id": "api",
+      "title": "Reference",
+      "href": "/api"
+    },
+    {
+      "id": "releases",
+      "title": "Releases",
+      "href": "/releases"
+    }
+  ],
+  "sidebar": [
+    {
+      "tab": "root",
+      "pages": [
+        {
+          "title": "📖 Overview",
+          "href": "/"
+        },
+        {
+          "title": "🥊 Jaspr vs Flutter Web",
+          "href": "/jaspr-vs-flutter-web"
+        },
+        {
+          "title": "🛫 Quickstart",
+          "href": "/quick_start"
+        }
+      ]
+    },
+    {
+      "tab": "root",
+      "group": "Development",
+      "pages": [
+        {
+          "title": "🕹️ Jaspr CLI",
+          "href": "/dev/cli"
+        },
+        {
+          "title": "📟 Rendering Modes",
+          "href": "/dev/modes"
+        },
+        {
+          "title": "☁️ Server-Side",
+          "href": "/dev/server"
+        },
+        {
+          "title": "⛳️ Client-Side",
+          "href": "/dev/client"
+        },
+        {
+          "title": "🏗️ Static Sites",
+          "href": "/dev/static_sites"
+        },
+        {
+          "title": "🧪 Testing",
+          "href": "/dev/testing"
+        },
+        {
+          "title": "🌐 Deploying",
+          "href": "/dev/deploying"
+        },
+        {
+          "title": "🤖 AI",
+          "href": "/dev/ai"
+        }
+      ]
+    },
+    {
+      "tab": "root",
+      "group": "Concepts",
+      "pages": [
+        {
+          "title": "🧱 Component System",
+          "href": "/concepts/components"
+        },
+        {
+          "title": "🖍️ Writing HTML",
+          "href": "/concepts/html"
+        },
+        {
+          "title": "🎨 Styling",
+          "href": "/concepts/styling"
+        },
+        {
+          "title": "🧭 Routing",
+          "href": "/concepts/routing"
+        },
+        {
+          "title": "📡 Data Fetching",
+          "href": "/concepts/data_fetching"
+        },
+        {
+          "title": "🔎 SEO & Meta",
+          "href": "/concepts/seo"
+        }
+      ]
+    },
+    {
+      "tab": "root",
+      "group": "Going Further",
+      "pages": [
+        {
+          "title": "💙 Flutter Embedding",
+          "href": "/going_further/flutter_embedding"
+        },
+        {
+          "title": "🪐 Custom Backend",
+          "href": "/going_further/backend"
+        },
+        {
+          "title": "🌟 Contributing",
+          "href": "/going_further/contributing"
+        },
+        {
+          "group": "📦 Packages",
+          "href": "/going_further/packages",
+          "pages": [
+            {
+              "title": "jaspr_riverpod",
+              "href": "https://pub.dev/packages/jaspr_riverpod"
+            },
+            {
+              "title": "jaspr_tailwind (3rd party)",
+              "href": "https://pub.dev/packages/jaspr_tailwind"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tab": "api",
+      "pages": [
+        {
+          "title": "📖 Overview",
+          "href": "/api"
+        },
+        {
+          "title": "⚙️ Configuration",
+          "href": "/api/config"
+        },
+        {
+          "title": "🧹 Linting",
+          "href": "/api/linting"
+        }
+      ]
+    },
+    {
+      "tab": "api",
+      "group": "Components",
+      "pages": [
+        {
+          "title": "Document",
+          "href": "/api/components/document"
+        },
+        {
+          "title": "RawText",
+          "href": "/api/components/raw_text"
+        },
+        {
+          "title": "AsyncBuilder",
+          "href": "/api/components/async_components"
+        },
+        {
+          "title": "AsyncStatelessComponent",
+          "href": "/api/components/async_components"
+        },
+        {
+          "title": "Router",
+          "href": "/api/components/router"
+        },
+        {
+          "title": "Link",
+          "href": "/api/components/link"
+        },
+        {
+          "title": "Style",
+          "href": "/api/components/style"
+        },
+        {
+          "title": "FlutterEmbedView",
+          "href": "/api/components/flutter_embed_view"
+        },
+        {
+          "title": "JasprBadge",
+          "href": "/api/components/jaspr_badge"
+        }
+      ]
+    },
+    {
+      "tab": "api",
+      "group": "General",
+      "pages": [
+        {
+          "title": "runApp",
+          "href": "/api/utils/run_app"
+        },
+        {
+          "title": "Styles",
+          "href": "/api/utils/styles"
+        },
+        {
+          "title": "@css / css()",
+          "href": "/api/utils/at_css"
+        },
+        {
+          "title": "events()",
+          "href": "/api/utils/events"
+        },
+        {
+          "title": "GlobalNodeKey",
+          "href": "/api/utils/global_node_key"
+        },
+        {
+          "title": "ViewTransitionMixin",
+          "href": "/api/utils/view_transition_mixin"
+        }
+      ]
+    },
+    {
+      "tab": "api",
+      "group": "Server / Client",
+      "pages": [
+        {
+          "title": "@client",
+          "href": "/api/utils/at_client"
+        },
+        {
+          "title": "@encoder/@decoder",
+          "href": "/api/utils/at_encoder_decoder"
+        },
+        {
+          "title": "@Import",
+          "href": "/api/utils/at_import"
+        },
+        {
+          "title": "@sync",
+          "href": "/api/utils/at_sync"
+        },
+        {
+          "title": "SyncStateMixin",
+          "href": "/api/utils/sync_state_mixin"
+        },
+        {
+          "title": "PreloadStateMixin",
+          "href": "/api/utils/preload_state_mixin"
+        },
+        {
+          "title": "headers / setHeader()",
+          "href": "/api/utils/headers"
+        },
+        {
+          "title": "cookies / setCookie()",
+          "href": "/api/utils/cookies"
+        },
+        {
+          "title": "setStatusCode()",
+          "href": "/api/utils/set_status_code"
+        }
+      ]
+    },
+    {
+      "tab": "content",
+      "pages": [
+        {
+          "title": "📖 Overview",
+          "href": "/content"
+        },
+        {
+          "title": "🛫 Quick Start",
+          "href": "/content/quick_start"
+        }
+      ]
+    },
+    {
+      "tab": "content",
+      "group": "Guides",
+      "pages": [
+        {
+          "title": "📄 Adding Pages",
+          "href": "/content/guides/adding_pages"
+        },
+        {
+          "title": "✒️ Writing Content",
+          "href": "/content/guides/writing_content"
+        },
+        {
+          "title": "🎨 Customizing Rendering",
+          "href": "/content/guides/customizing_rendering"
+        },
+        {
+          "title": "🌐 Assembling the Site",
+          "href": "/content/guides/assembling_the_site"
+        }
+      ]
+    },
+    {
+      "tab": "content",
+      "group": "Concepts",
+      "pages": [
+        {
+          "title": "Pages",
+          "href": "/content/concepts/pages"
+        },
+        {
+          "title": "ContentApp",
+          "href": "/content/concepts/content_app"
+        },
+        {
+          "title": "Route Loading",
+          "href": "/content/concepts/route_loading"
+        },
+        {
+          "title": "Data Loading",
+          "href": "/content/concepts/data_loading"
+        },
+        {
+          "title": "Templating",
+          "href": "/content/concepts/templating"
+        },
+        {
+          "title": "Page Parsing",
+          "href": "/content/concepts/page_parsing"
+        },
+        {
+          "group": "Page Extensions",
+          "pages": [
+            {
+              "title": "Overview",
+              "href": "/content/concepts/page_extensions"
+            },
+            {
+              "title": "Heading Anchors",
+              "href": "/content/extensions/heading_anchors"
+            },
+            {
+              "title": "Table of Contents",
+              "href": "/content/extensions/table_of_contents"
+            }
+          ]
+        },
+        {
+          "title": "Custom Components",
+          "href": "/content/concepts/custom_components"
+        },
+        {
+          "group": "Page Layouts",
+          "pages": [
+            {
+              "title": "Overview",
+              "href": "/content/concepts/page_layouts"
+            },
+            {
+              "title": "DocsLayout",
+              "href": "/content/layouts/docs_layout"
+            },
+            {
+              "title": "BlogLayout",
+              "href": "/content/layouts/blog_layout"
+            },
+            {
+              "title": "EmptyLayout",
+              "href": "/content/layouts/empty_layout"
+            }
+          ]
+        },
+        {
+          "title": "Theming",
+          "href": "/content/concepts/theming"
+        },
+        {
+          "title": "Assets",
+          "href": "/content/concepts/assets"
+        },
+        {
+          "title": "Secondary Outputs",
+          "href": "/content/concepts/secondary_outputs"
+        }
+      ]
+    },
+    {
+      "tab": "content",
+      "group": "Components",
+      "pages": [
+        {
+          "title": "Callout",
+          "href": "/content/components/callout"
+        },
+        {
+          "title": "CodeBlock",
+          "href": "/content/components/code_block"
+        },
+        {
+          "title": "Image",
+          "href": "/content/components/image"
+        },
+        {
+          "title": "Tabs",
+          "href": "/content/components/tabs"
+        },
+        {
+          "title": "FileTree",
+          "href": "/content/components/file_tree"
+        },
+        {
+          "title": "DropCap",
+          "href": "/content/components/drop_cap"
+        },
+        {
+          "title": "PostBreak",
+          "href": "/content/components/post_break"
+        }
+      ]
+    },
+    {
+      "tab": "guides",
+      "pages": [
+        {
+          "title": "Overview",
+          "href": "/guides"
+        }
+      ]
+    },
+    {
+      "tab": "releases",
+      "group": "Releases",
+      "pages": [
+        {
+          "title": "0.23.0",
+          "href": "/releases/v/0.23.0"
+        },
+        {
+          "title": "0.22.0",
+          "href": "/releases/v/0.22.0"
+        },
+        {
+          "title": "0.21.0",
+          "href": "/releases/v/0.21.0"
+        }
+      ]
+    },
+    {
+      "tab": "releases",
+      "group": "Tooling & Packages",
+      "pages": [
+        {
+          "title": "VSCode Extension 0.2.2",
+          "href": "/releases/packages/jaspr-code-v0.2.2"
+        }
+      ]
+    }
+  ],
+  "search": {
+    "docsearch": {
+      "appId": "A6YJMZH2L6",
+      "apiKey": "fc0396527fd1f9eb22ed3197c6fe72fe",
+      "indexName": "jaspr"
+    }
+  }
+}

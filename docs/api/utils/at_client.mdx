@@ -1,0 +1,124 @@
+---
+title: "@client Components"
+description: With the @client annotation you can automatically hydrate selected components on the client.
+---
+
+---
+
+A component annotated with `@client` will be automatically hydrated on the client after it has been pre-rendered. In principle, this is like 'resuming' the rendering for a component and picking up where the server-side rendering has left off.
+
+A `@client` component acts as a 'boundary' between server and client. Components in the tree above will be rendered **only on the server**, while components in the tree below will be rendered **both on the server and client**.
+
+<Info>
+It is generally recommended to keep a 'mental note' about which components are only rendered on the server, and which are also rendered on the client. This distinction may become important later when you develop your website and want to import some server-specific or client-specific library or package. Then you need to make sure that your component compiles for all environments
+it will be rendered in.
+</Info>
+
+## Usage
+
+For `@client` to work, make sure to call `Jaspr.initializeApp(options: defaultServerOptions);`
+before `runApp();` in your `main.server.dart` *(This is already setup when creating a new project)*.
+
+Then simply annotate your desired component with `@client` like this:
+
+```dart title=app.dart
+import 'package:jaspr/jaspr.dart';
+
+// Turns this into a client component.
+@client
+class App extends StatelessComponent {
+  const App({super.key});
+
+  @override
+  Component build(BuildContext context) {
+    return /* ... */;
+  }
+}
+```
+
+<Info>
+Only one `@client` component per file is allowed.
+</Info>
+
+You can use `@client` components normally as any other component. 
+
+To have separate interactive parts of your site, simply annotate multiple components with `@client`. Only the outermost `@client` component of a nested sub-tree will be hydrated on the client, while nested client components will be safely ignored.
+
+All `@client` components are mounted on the client as direct children of the `ClientApp` component, usually created inside `main.client.dart` entrypoint (See [Client Entrypoint](/dev/client#client-entrypoint)).
+
+### Sharing State
+
+To share state between multiple `@client` components, simply wrap the root `ClientApp` component in your `main.client.dart` with your preferred state provider, such as an `InheritedComponent` or `jaspr_riverpod`'s `ProviderScope`.
+
+```dart title=lib/main.client.dart
+import 'package:jaspr/jaspr.dart';
+
+void main() {
+  runApp(
+    MyInheritedComponent(
+      state: myState,
+      child: ClientApp()
+    ),
+  );
+}
+```
+
+### Passing Data
+
+As any other component, `@client` components can have parameters *(with certain limitations)*. 
+
+Parameters are automatically serialized on the server and de-serialized on the client when hydrating the component. Therefore, using `@client` components with parameters are a **great way to pass data from the server to the client**. For this to work, the following requirements apply:
+
+#### 1. All parameters must be **initializing field** parameters (`this.<fieldname>`):
+
+```dart
+@client
+class App extends StatelessComponent {
+  const App({required this.title, super.key});
+
+  final String title;
+
+  /* ... */
+}
+```
+
+#### 2. All parameters must be **serializable**:
+
+Parameters must either have a primitive serializable type: `bool`, `int`, `double`, `String` or `List` / `Map`s of these.
+
+Or you can use custom data types by using the `@encoder` and `@decoder` annotations with the class:
+
+```dart title="model.dart"
+class Model {
+  @decoder
+  static Model fromJson(Map<String, dynamic> json) => /* ... */;
+
+  @encoder
+  Map<String, dynamic> toJson() => /* ... */;
+}
+```
+
+Learn more about how to set up serialization for custom data types using the [`@encoder`/ `@decoder`](/api/utils/at_encoder_decoder) annotations.
+
+With this setup you can use any class as the parameter of a `@client` component.
+
+## How it works
+
+The following happens when you use a `@client` component:
+
+*during build:*
+
+1. The component (along with some framework bits) is compiled as part of the main js bundle.
+
+*on the server:*
+
+2. The component is built and pre-rendered normally.
+3. Jaspr adds a html marker (`<!--$<name> data=<serialized-parameters>-->`) around your components output.
+4. Jaspr adds the components js target as a `<script>` tag to the documents `<head>`.
+
+*on the client:*
+
+5. The browser loads the pre-rendered html and compiled js scripts.
+6. The used component is located based on the html marker.
+7. The parameters are deserialized and the component is mounted to the target element.
+

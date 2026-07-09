@@ -1,0 +1,357 @@
+import 'dart:io';
+
+import 'package:file/file.dart' hide FileSystemEntity;
+import 'package:file/local.dart';
+import 'package:path/path.dart' as path;
+import 'package:pub_semver/pub_semver.dart';
+import 'package:yaml/yaml.dart';
+
+import 'logging.dart';
+import 'process_runner.dart';
+import 'version.dart';
+
+enum JasprMode { static, server, client }
+
+enum FlutterMode { embedded, plugins, none }
+
+extension JasprModeExtension on JasprMode {
+  bool get isServerOrStatic => this == JasprMode.server || this == JasprMode.static;
+}
+
+class Project {
+  Project(this.logger, {FileSystem? fs, Never Function(int)? exitFn})
+    : _fs = fs ?? const LocalFileSystem(),
+      _exitFn = exitFn ?? exit;
+
+  final Logger logger;
+  final FileSystem _fs;
+  final Never Function(int) _exitFn;
+
+  YamlMap? get pubspecYaml => _pubspecYaml;
+  YamlMap get requirePubspecYaml {
+    final pubspecYaml = _pubspecYaml;
+    if (pubspecYaml == null) {
+      logger.write(
+        'Could not find pubspec.yaml file. Make sure to run jaspr in your root project directory.',
+        tag: Tag.cli,
+        level: Level.critical,
+      );
+      _exitFn(1);
+    }
+    return pubspecYaml;
+  }
+
+  late final File pubspecFile = _fs.file('pubspec.yaml').absolute;
+
+  late final YamlMap? _pubspecYaml = () {
+    if (!pubspecFile.existsSync()) {
+      return null;
+    }
+
+    try {
+      return loadYaml(pubspecFile.readAsStringSync()) as YamlMap;
+    } catch (e) {
+      logger.write('Could not parse pubspec.yaml file: $e', tag: Tag.cli, level: Level.critical);
+      _exitFn(1);
+    }
+  }();
+
+  void get requireJasprDependency {
+    if (requirePubspecYaml case {'dependencies': {'jaspr': _}}) {
+      // ok
+    } else {
+      logger.write(
+        'Missing dependency on jaspr in pubspec.yaml file. Make sure to add jaspr to your dependencies.',
+        tag: Tag.cli,
+        level: Level.critical,
+      );
+      _exitFn(1);
+    }
+  }
+
+  void checkJasprDependencyVersion() {
+    final pubspecYaml = requirePubspecYaml;
+    if (pubspecYaml case {'dependencies': {'jaspr': final String version}}) {
+      final usedVersion = VersionConstraint.parse(version);
+      final currentVersion = Version.parse(jasprCoreVersion);
+      final minVersion = Version(
+        currentVersion.major,
+        currentVersion.minor,
+        0,
+        pre: currentVersion.isPreRelease ? currentVersion.preRelease.map((s) => s is int ? 0 : s).join('.') : null,
+      );
+      final requiredVersion = VersionConstraint.compatibleWith(minVersion);
+      if (!requiredVersion.allowsAll(usedVersion)) {
+        logger.write(
+          'Incompatible jaspr dependency with version $version found in pubspec.yaml. Please use a minimum version constraint of $minVersion for all core packages.',
+          tag: Tag.cli,
+          level: Level.critical,
+        );
+        _exitFn(1);
+      }
+    }
+  }
+
+  void get preferJasprBuilderDependency {
+    if (requirePubspecYaml case {'dev_dependencies': {'jaspr_builder': _}}) {
+      // ok
+    } else {
+      final log = logger.logger;
+      if (log == null || !stdout.hasTerminal) {
+        logger.write(
+          'Missing dependency on jaspr_builder in pubspec.yaml file. Make sure to add jaspr_builder to your dev_dependencies.',
+          tag: Tag.cli,
+          level: Level.warning,
+        );
+      } else {
+        final result = log.confirm(
+          'Missing dependency on jaspr_builder package. Do you want to add jaspr_builder to your dev_dependencies now?',
+          defaultValue: true,
+        );
+        if (result) {
+          final result = ProcessRunner.instance.runSync(dartExecutable, ['pub', 'add', '--dev', 'jaspr_builder']);
+          if (result.exitCode != 0) {
+            log.err(result.stderr as String?);
+            logger.write(
+              'Failed to run "dart pub add --dev jaspr_builder". There is probably more output above.',
+              tag: Tag.cli,
+              level: Level.critical,
+            );
+            _exitFn(1);
+          }
+
+          log.success('Successfully added jaspr_builder to your dev_dependencies.');
+        }
+      }
+    }
+  }
+
+  YamlMap get _requireJasprOptions {
+    final configYaml = requirePubspecYaml['jaspr'];
+    if (configYaml == null) {
+      logger.write('Missing \'jaspr\' options in pubspec.yaml.', tag: Tag.cli, level: Level.critical);
+      _exitFn(1);
+    }
+    if (configYaml is! YamlMap) {
+      logger.write('\'jaspr\' options must be a yaml map in pubspec.yaml.', tag: Tag.cli, level: Level.critical);
+      _exitFn(1);
+    }
+    return configYaml;
+  }
+
+  JasprMode? get modeOrNull {
+    final configYaml = pubspecYaml?['jaspr'];
+    if (configYaml is! YamlMap) {
+      return null;
+    }
+    final modeYaml = configYaml['mode'];
+    if (modeYaml is! String) {
+      return null;
+    }
+    final modeOrNull = JasprMode.values.where((v) => v.name == modeYaml).firstOrNull;
+    return modeOrNull;
+  }
+
+  JasprMode get requireMode {
+    final configYaml = _requireJasprOptions;
+
+    final modeYaml = configYaml['mode'];
+    if (modeYaml == null) {
+      logger.write(
+        '\'jaspr.mode\' option in pubspec.yaml is required but missing.',
+        tag: Tag.cli,
+        level: Level.critical,
+      );
+      _exitFn(1);
+    }
+    final modeOrNull = JasprMode.values.where((v) => v.name == modeYaml).firstOrNull;
+    if (modeOrNull == null) {
+      logger.write(
+        '\'jaspr.mode\' in pubspec.yaml must be one of ${JasprMode.values.map((v) => v.name).join(', ')}.',
+        tag: Tag.cli,
+        level: Level.critical,
+      );
+      _exitFn(1);
+    }
+    return modeOrNull;
+  }
+
+  FlutterMode get flutterMode {
+    final configYaml = pubspecYaml?['jaspr'];
+    if (configYaml is! YamlMap) {
+      return FlutterMode.none;
+    }
+    final modeYaml = configYaml['flutter'];
+    if (modeYaml is! String) {
+      return FlutterMode.none;
+    }
+    final modeOrNull = FlutterMode.values.where((v) => v.name == modeYaml).firstOrNull;
+    if (modeOrNull == null) {
+      logger.write(
+        '\'jaspr.flutter\' in pubspec.yaml must be one of ${FlutterMode.values.map((v) => v.name).join(', ')}.',
+        tag: Tag.cli,
+        level: Level.critical,
+      );
+      _exitFn(1);
+    }
+    return modeOrNull;
+  }
+
+  String? get port {
+    final configYaml = _requireJasprOptions;
+
+    final portYaml = configYaml['port'];
+    if (portYaml != null) {
+      if (portYaml is int) {
+        return portYaml.toString();
+      } else {
+        logger.write(
+          '\'jaspr.port\' in pubspec.yaml must be an integer.',
+          tag: Tag.cli,
+          level: Level.critical,
+        );
+        _exitFn(1);
+      }
+    }
+    return null;
+  }
+
+  late final YamlMap? pubspecLock = () {
+    final pubspecLockPath = 'pubspec.lock';
+    var pubspecLockFile = _fs.file(pubspecLockPath).absolute;
+
+    if (!pubspecLockFile.existsSync() && pubspecYaml?['resolution'] == 'workspace') {
+      var n = 1;
+      while (n < 5) {
+        final parent = path.dirname(path.dirname(pubspecLockFile.path));
+        if (parent == pubspecLockFile.path) {
+          break;
+        }
+        pubspecLockFile = _fs.file(path.join(parent, 'pubspec.lock'));
+        if (pubspecLockFile.existsSync()) {
+          break;
+        }
+        n++;
+      }
+    }
+
+    if (pubspecLockFile.existsSync()) {
+      try {
+        return loadYaml(pubspecLockFile.readAsStringSync()) as YamlMap;
+      } catch (e) {
+        logger.write('Could not parse pubspec.lock file: $e', tag: Tag.cli, level: Level.critical);
+        _exitFn(1);
+      }
+    }
+    return null;
+  }();
+
+  void checkWasmSupport() {
+    final devDependencies = pubspecYaml?['dev_dependencies'] as Map<Object?, Object?>?;
+    final version = switch (devDependencies?['build_web_compilers']) {
+      final String v => VersionConstraint.parse(v),
+      _ => null,
+    };
+    final minVersion = VersionConstraint.compatibleWith(Version(4, 1, 0));
+    if (version == null || !minVersion.allowsAll(version)) {
+      logger.write(
+        'Using "--experimental-wasm" requires build_web_compilers 4.1.0 or newer. '
+        'Please update your version constraint in pubspec.yaml.',
+        tag: Tag.cli,
+        level: Level.critical,
+      );
+      _exitFn(1);
+    }
+
+    if (flutterMode == FlutterMode.embedded) {
+      logger.write(
+        'Using "--experimental-wasm" is currently not supported together with Flutter embedding.',
+        tag: Tag.cli,
+        level: Level.critical,
+      );
+      _exitFn(1);
+    }
+  }
+
+  void checkFlutterBuildSupport() {
+    final devDependencies = pubspecYaml?['dev_dependencies'] as Map<Object?, Object?>?;
+    final version = switch (devDependencies?['build_web_compilers']) {
+      final String v => VersionConstraint.parse(v),
+      _ => null,
+    };
+    final minVersion = VersionConstraint.compatibleWith(Version(4, 4, 6));
+    if (version == null || !minVersion.allowsAll(version)) {
+      logger.write(
+        'Using "jaspr.flutter=${flutterMode.name}" in pubspec.yaml requires build_web_compilers 4.4.6 or newer. '
+        'Please update your version constraint in pubspec.yaml.',
+        tag: Tag.cli,
+        level: Level.critical,
+      );
+
+      _exitFn(1);
+    }
+  }
+}
+
+const defaultServePort = '8080';
+const serverProxyPort = '5567';
+const flutterProxyPort = '5678';
+
+// The path to the Dart executable in either the Dart or Flutter SDK.
+final dartExecutable = () {
+  final String? executable;
+  if (Platform.isWindows) {
+    // Use 'where.exe' to support powershell as well
+    final result = (ProcessRunner.instance.runSync('where.exe', ['dart.bat', 'dart.exe'])).stdout.toString();
+    executable = result.split(RegExp('(\r\n|\r|\n)')).where((s) => !s.contains('Could not find')).firstOrNull?.trim();
+  } else {
+    executable = (ProcessRunner.instance.runSync('which', ['dart'])).stdout.toString().trim();
+  }
+
+  if (executable == null || executable.isEmpty) {
+    throw Exception('Could not find Dart executable. Make sure Dart is installed and added to your PATH.');
+  }
+
+  bool isSdkExecutable(String executable) {
+    final maybeSdkDir = path.dirname(path.dirname(executable));
+    return FileSystemEntity.isFileSync(path.join(maybeSdkDir, 'version')) &&
+        path.basename(path.dirname(executable)) == 'bin';
+  }
+
+  if (isSdkExecutable(executable)) {
+    return executable;
+  }
+
+  final maybeFlutterDartExecutable = path.join(
+    path.dirname(executable),
+    'cache',
+    'dart-sdk',
+    'bin',
+    Platform.isWindows ? 'dart.exe' : 'dart',
+  );
+  if (isSdkExecutable(maybeFlutterDartExecutable)) {
+    return maybeFlutterDartExecutable;
+  }
+
+  throw Exception(
+    'Found Dart executable at "$executable", but failed to verify the surrounding Dart SDK.\n'
+    'Make sure "${Platform.isWindows ? 'where.exe dart.bat dart.exe' : 'which dart'}" resolves to the Dart executable inside the Dart or Flutter SDK directory.',
+  );
+}();
+
+/// The path to the root directory of the SDK.
+final String dartSdkDir = path.dirname(path.dirname(dartExecutable));
+
+final dartSdkVersion = () {
+  final result = ProcessRunner.instance.runSync(dartExecutable, ['--version']);
+  if (result.exitCode != 0) {
+    return 'unknown';
+  }
+  final output = result.stdout.toString().trim();
+  if (output.startsWith('Dart SDK version:')) {
+    return output.substring('Dart SDK version:'.length).trim();
+  }
+  return 'unknown';
+}();
+
+final String dartDevToolsPath = path.join(dartSdkDir, 'bin', 'resources', 'devtools');

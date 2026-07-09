@@ -1,0 +1,54 @@
+import 'package:jaspr/dom.dart';
+import 'package:jaspr/jaspr.dart';
+
+import '../data/firebase.dart';
+@Import.onWeb('../interop/confetti.dart', show: [#JSConfetti])
+import 'quote_like_button.imports.dart';
+
+@client
+class QuoteLikeButton extends StatelessComponent {
+  const QuoteLikeButton({required this.id, required this.initialCount});
+
+  final String id;
+  final int initialCount;
+
+  @override
+  Component build(BuildContext context) {
+    return StreamBuilder(
+      stream: kIsWeb ? FirebaseService.instance.getQuoteById(id) : null,
+      builder: (context, snapshot) {
+        int count = snapshot.data?.likes.length ?? initialCount;
+        bool? hasLiked = snapshot.data?.likes.contains(FirebaseService.instance.getUserId());
+
+        return button(
+          classes: "quote-like-btn${hasLiked == true ? ' active' : ''}",
+          onClick: () {
+            if (hasLiked == null) return;
+            FirebaseService.instance.toggleLikeOnQuote(id, !hasLiked);
+            if (!hasLiked) {
+              JSConfetti.instance.show(emojis: ['🎯', '💙']);
+            }
+          },
+          [span(classes: "icon-heart${hasLiked ?? false ? '' : '-o'}", []), .text(' $count')],
+        );
+      },
+    );
+  }
+
+  @css
+  static List<StyleRule> get styles => [
+    css('.quote-like-btn', [
+      css('&').styles(
+        border: .none,
+        outline: .new(style: .none),
+        fontSize: 18.px,
+        backgroundColor: Colors.transparent,
+      ),
+      css('&:hover span').styles(transform: .scale(1.2)),
+      css('&.active span').styles(color: Colors.blue),
+      css('span').styles(
+        transition: .new('transform', duration: 300.ms, curve: .ease),
+      ),
+    ]),
+  ];
+}

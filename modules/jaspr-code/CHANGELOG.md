@@ -1,0 +1,45 @@
+## 0.4.0
+
+- Jaspr is now installed using `dart install jaspr_cli` instead of `dart pub global activate jaspr_cli`. 
+  This requires Dart 3.10 or later.
+- The extension now expects the `jaspr` command to be available on the system PATH.
+- Removed custom reporting of unsafe imports diagnostics. This is now part of the `jaspr_lints` package.
+- Component scopes now require `jaspr_lints` to be setup as an analyzer plugin for the current project.
+
+## 0.3.1
+
+- Fix issue where the entry file was not opened after project creation.
+
+## 0.3.0
+
+- Added the `Serve` code-lens to `main` functions for launching Jaspr, and hide the default `Run / Debug` code lenses.
+- Allow latest Dart Extension.
+
+## 0.2.3
+
+- Improved stability of component scope analysis.
+
+## 0.2.2
+
+- Convert HTML to Jaspr code when pasting into a Dart editor.
+
+## 0.2.1
+
+- Added code lenses for component scopes.
+- Bump minimum required jaspr_cli version to `0.21.0`.
+
+## 0.2.0
+
+- Update to new dart-code API.
+
+## 0.1.3
+
+- Added code snippets.
+
+## 0.1.2
+
+- Added `Documentation Site` template for Jaspr `0.19.0`.
+
+## 0.1.0
+
+- Initial release

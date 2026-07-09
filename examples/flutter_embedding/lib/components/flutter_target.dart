@@ -1,0 +1,54 @@
+import 'package:jaspr/dom.dart';
+import 'package:jaspr/jaspr.dart';
+import 'package:jaspr_flutter_embed/jaspr_flutter_embed.dart';
+import 'package:jaspr_riverpod/jaspr_riverpod.dart';
+
+import '../providers/effects_provider.dart';
+@Import.onWeb('package:flutter/widgets.dart', show: [#Widget])
+import 'flutter_target.imports.dart';
+
+class FlutterTarget extends StatelessComponent {
+  const FlutterTarget({required this.app, this.loader, super.key});
+
+  final WidgetOrStubbed? app;
+  final Component? loader;
+
+  @override
+  Component build(BuildContext context) {
+    var effects = context.watch(effectsProvider);
+    var rotation = context.watch(rotationProvider);
+
+    var isHandheld = effects.contains('handheld');
+
+    Component child = FlutterEmbedView(
+      key: GlobalObjectKey('flutter_target'),
+      id: "flutter_target",
+      classes: isHandheld ? 'handheld' : effects.join(' '),
+      styles: !isHandheld && rotation != 0
+          ? Styles(
+              transform: .combine([.perspective(1000.px), .rotateAxis(y: rotation.deg)]),
+            )
+          : null,
+      loader: loader,
+      widget: app,
+    );
+
+    if (isHandheld) {
+      child = div(id: 'handheld', [
+        child,
+        span(classes: 'imageAttribution', [
+          .text('Photo by '),
+          a(
+            href: 'https://unsplash.com/photos/x9WGMWwp1NM',
+            target: .blank,
+            attributes: {'rel': 'noopener noreferrer'},
+            [.text('Nathana Rebouças')],
+          ),
+          .text(' on Unsplash'),
+        ]),
+      ]);
+    }
+
+    return article([child]);
+  }
+}

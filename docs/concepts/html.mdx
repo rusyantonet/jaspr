@@ -1,0 +1,123 @@
+---
+title: Writing HTML
+description: How to write concise html markup in Jaspr.
+---
+
+---
+
+With jaspr, you write HTML as part of your component tree. Each HTML tag (like `div`, `p`, `img`, etc.) has an assigned component you can use (resp. `div()`, `p()`, `img()`, etc.).
+
+Let's look at the following HTML snippet:
+
+```html
+<div>
+  <h1>This is a title</h1>
+  <p>Hello <b>World!</b></p>
+</div>
+```
+
+Within a Jaspr component, this can be represented as such:
+
+```dart
+div([
+  h1([.text('This is a title')]),
+  p([.text('Hello '), b([.text('World!')])]),
+]);
+```
+
+The `.text()` is the dot-shorthands version of `Component.text()`, which does not add a HTML tag but renders plain text inside other elements.
+
+## HTML utilities
+  
+There exist components for the most common HTML tags, like `div`, `a`, `p`, `img` as well as more special tags like
+`video`, `form`, `input` and others.
+
+<Info>
+If you want support for a tag that does not have such a method yet, please don't hesitate to open an issue on GitHub.
+</Info>
+
+These components are available under the `package:jaspr/dom.dart` library, and each component is defined like this:
+
+```dart
+class <tagname> extends Component {
+  const <tagname>(
+    List<Component> children, {
+    String? id,
+    String? classes,
+    Styles? styles,
+    Map<String, String>? attributes,
+    Map<String, EventCallback>? events,
+    Key? key,
+  });
+}
+```
+
+In addition to these common properties some components support tag-specific properties, like `img(src: "...")` or `a(href: "...")`.
+
+<Info>
+
+For readability, it is recommended to put the list of child components last in the parameter list:
+`div(id: "main", [.text('Hello World')])` is more readable than `div([.text('Hello World')], id: "main")`.
+In case of no children specify an empty list (`[]`). Some tags also omit this parameter, like `img`.
+</Info>
+
+[Try it out on JasprPad](https://playground.jaspr.site/?sample=html)
+
+---
+
+Finally, here are some more examples of this syntax. You can switch between the Dart code and rendered html output.
+
+<CodeGroup title="Paragraph with rich text">
+  ```dart
+    p([.text('This is some '),b([.text('html')]),.text(' content.')])
+  ```
+  ```html
+    <p>This is some <b>html</b> content.</p>
+  ```
+</CodeGroup>
+
+<CodeGroup title="Heading with blue text">
+    ```dart
+    h1(styles: Styles(color: Colors.blue), [.text('Hello Jaspr!')])
+    ```
+    ```html
+    <h1 style="color: blue;">Hello Jaspr!</h1>
+    ```
+</CodeGroup>
+
+<CodeGroup title="Anchor with an image">
+  ```dart
+    a(href: "https://github.com/schultek/jaspr", target: .blank, [
+      img(src: "https://playground.jaspr.site/jaspr-192.png"),
+    ])
+  ```
+  ```html
+    <a href="https://github.com/schultek/jaspr" target="_blank">
+      <img src="https://playground.jaspr.site/jaspr-192.png" />
+    </a>
+  ```
+</CodeGroup>
+
+<CodeGroup title="Select input">
+  ```dart
+    select([
+      option(value: 'test', [.text('Select me!')]),
+      option(value: 'other', selected: true, [.text('Or me!')])
+    ])
+  ```
+  ```html
+    <select>
+      <option value="test">Select me!</option>
+      <option value="other" selected>Or me!</option>
+    </select>
+  ```
+</CodeGroup>
+
+<CodeGroup title="Progress bar">
+    ```dart
+    progress(value: 85, max: 100, [])
+    ```
+    ```html
+    <progress value="85" max="100"></progress>
+    ```
+</CodeGroup>

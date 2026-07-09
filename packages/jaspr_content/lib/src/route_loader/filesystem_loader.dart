@@ -1,0 +1,205 @@
+import 'dart:async';
+
+import 'package:file/file.dart';
+import 'package:file/local.dart';
+import 'package:jaspr/server.dart';
+import 'package:jaspr_router/jaspr_router.dart';
+import 'package:path/path.dart' as p;
+import 'package:watcher/watcher.dart';
+
+import '../page.dart';
+import '../utils.dart';
+import 'route_loader.dart';
+
+/// A loader that loads routes from the filesystem.
+///
+/// Routes are constructed based on the recursive folder structure under the root [directory].
+/// Index files (index.*) are treated as the page for the containing folder.
+/// Files and folders starting with an underscore (_) are ignored.
+class FilesystemLoader extends RouteLoaderBase<FilePageSource> {
+  FilesystemLoader(
+    this.directory, {
+    this.filterExtensions = const {},
+    this.keepSuffixPattern,
+    super.debugPrint,
+    @visibleForTesting this.fileSystem = const LocalFileSystem(),
+    @visibleForTesting DirectoryWatcherFactory? watcherFactory,
+  }) : watcherFactory = watcherFactory ?? _defaultWatcherFactory;
+
+  /// The directory to load pages from.
+  final String directory;
+
+  /// A set of file extensions to filter for.
+  ///
+  /// Files in the content directory with other extensions are skipped.
+  final Set<String> filterExtensions;
+
+  /// A pattern to keep the file suffix for all matching pages.
+  final Pattern? keepSuffixPattern;
+
+  @visibleForTesting
+  final FileSystem fileSystem;
+  @visibleForTesting
+  final DirectoryWatcherFactory watcherFactory;
+
+  static DirectoryWatcher _defaultWatcherFactory(String path) => DirectoryWatcher(path);
+
+  final Map<String, Set<FilePageSource>> dependentSources = {};
+
+  StreamSubscription<WatchEvent>? _watcherSub;
+
+  @override
+  Future<List<RouteBase>> loadRoutes(
+    ConfigResolver resolver,
+    bool eager,
+  ) async {
+    if (kDebugMode) {
+      _watcherSub ??= watcherFactory(directory).events.listen((event) {
+        // It looks like event.path is relative on most platforms, but an
+        // absolute path on Linux. Turn this into the expected relative path.
+        final path = p.normalize(p.relative(event.path));
+        if (event.type == ChangeType.MODIFY) {
+          invalidateFile(path);
+        } else if (event.type == ChangeType.REMOVE) {
+          removeFile(path);
+        } else if (event.type == ChangeType.ADD) {
+          addFile(path);
+        }
+      });
+    }
+    return super.loadRoutes(resolver, eager);
+  }
+
+  @override
+  void onReassemble() {
+    _watcherSub?.cancel();
+    _watcherSub = null;
+  }
+
+  @override
+  Future<String> readPartial(String path, Page page) {
+    return _getPartial(path, page).readAsString();
+  }
+
+  @override
+  String readPartialSync(String path, Page page) {
+    return _getPartial(path, page).readAsStringSync();
+  }
+
+  File _getPartial(String path, Page page) {
+    final pageSource = getSourceForPage(page);
+    if (pageSource != null) {
+      (dependentSources[path] ??= {}).add(pageSource);
+    }
+    return fileSystem.file(path);
+  }
+
+  @override
+  Future<List<FilePageSource>> loadPageSources() async {
+    final root = fileSystem.directory(directory);
+    if (!await root.exists()) {
+      return [];
+    }
+
+    List<FilePageSource> loadFiles(Directory dir) {
+      final List<FilePageSource> entities = [];
+      for (final entry in dir.listSync()) {
+        if (entry is File) {
+          if (filterExtensions.isNotEmpty && !filterExtensions.contains(p.extension(entry.path))) {
+            continue;
+          }
+
+          // Convert the file path to a posix path.
+          final posixPath = p.posix.fromUri(
+            fileSystem.path.toUri(fileSystem.path.relative(entry.path, from: directory)),
+          );
+          entities.add(
+            FilePageSource(
+              posixPath,
+              entry,
+              this,
+              keepSuffix: keepSuffixPattern?.matchAsPrefix(posixPath) != null,
+            ),
+          );
+        } else if (entry is Directory) {
+          entities.addAll(loadFiles(entry));
+        }
+      }
+      return entities;
+    }
+
+    return loadFiles(root);
+  }
+
+  void addFile(String path) {
+    if (filterExtensions.isNotEmpty && !filterExtensions.contains(p.extension(path))) {
+      return;
+    }
+    // Convert the file path to a posix path.
+    final posixPath = p.posix.fromUri(
+      fileSystem.path.toUri(fileSystem.path.relative(path, from: directory)),
+    );
+    addSource(
+      FilePageSource(
+        posixPath,
+        fileSystem.file(path),
+        this,
+        keepSuffix: keepSuffixPattern?.matchAsPrefix(posixPath) != null,
+      ),
+    );
+  }
+
+  void removeFile(String path) {
+    final source = sources.where((source) => source.file.path == path).firstOrNull;
+    if (source != null) {
+      removeSource(source);
+    }
+  }
+
+  void invalidateFile(String path, {bool rebuild = true}) {
+    final source = sources.where((source) => source.file.path == path).firstOrNull;
+    if (source != null) {
+      invalidateSource(source, rebuild: rebuild);
+    }
+  }
+
+  @override
+  void invalidateSource(FilePageSource source, {bool rebuild = true}) {
+    super.invalidateSource(source, rebuild: rebuild);
+    final dependencies = {...?dependentSources[source.file.path]};
+    dependentSources[source.file.path]?.clear();
+    for (final dependent in dependencies) {
+      invalidateSource(dependent, rebuild: rebuild);
+    }
+  }
+
+  @override
+  void invalidateAll() {
+    super.invalidateAll();
+    dependentSources.clear();
+  }
+}
+
+class FilePageSource extends PageSource {
+  FilePageSource(
+    super.path,
+    this.file,
+    super.loader, {
+    super.keepSuffix,
+  });
+
+  final File file;
+
+  @override
+  Future<Page> buildPage() async {
+    final content = await file.readAsString();
+
+    return Page(
+      path: path,
+      url: url,
+      content: content,
+      config: config,
+      loader: loader,
+    );
+  }
+}

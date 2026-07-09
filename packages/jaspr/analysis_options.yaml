@@ -1,0 +1,5 @@
+include: package:jaspr_repo/core.yaml
+
+linter:
+  rules:
+    comment_references: true

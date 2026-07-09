@@ -1,0 +1,22 @@
+include: package:lints/recommended.yaml
+
+plugins:
+  jaspr_lints:
+    path: ../jaspr_lints
+    diagnostics:
+      sort_children_last: true
+      prefer_html_components: true
+      styles_ordering: true
+
+linter:
+  rules:
+    directives_ordering: true
+    prefer_relative_imports: true
+    sort_pub_dependencies: true
+    strict_top_level_inference: true
+    unnecessary_underscores: true
+    use_null_aware_elements: true
+
+formatter:
+  page_width: 120
+  trailing_commas: preserve
