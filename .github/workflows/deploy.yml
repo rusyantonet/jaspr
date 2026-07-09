@@ -7,70 +7,75 @@ on:
 
   workflow_dispatch:
 
+
 jobs:
   build-deploy:
+
     runs-on: ubuntu-latest
 
+    defaults:
+      run:
+        working-directory: deffcon
+
     steps:
-      # 1. Checkout source code
+
+      # Checkout repository
       - name: Checkout repository
         uses: actions/checkout@v4
 
 
-      # 2. Setup Dart
+      # Setup Dart SDK
       - name: Setup Dart SDK
         uses: dart-lang/setup-dart@v1
         with:
           sdk: "3.12.0"
 
 
-      # 3. Install Jaspr CLI
+      # Install Jaspr CLI
       - name: Install Jaspr CLI
         run: |
           dart pub global activate jaspr_cli 0.23.1
           echo "$HOME/.pub-cache/bin" >> $GITHUB_PATH
 
 
-      # 4. Install dependencies
+      # Check project structure
+      - name: Check project
+        run: |
+          pwd
+          ls -la
+          cat pubspec.yaml
+
+
+      # Get dependencies
       - name: Get dependencies
         run: dart pub get
 
 
-      # 5. Build Jaspr
-      - name: Build Jaspr site
-        run: |
-          jaspr build
+      # Build Jaspr
+      - name: Build Jaspr
+        run: jaspr build
 
 
-      # 6. Prepare SSH
+      # Setup SSH
       - name: Setup SSH
+        working-directory: .
         run: |
           mkdir -p ~/.ssh
 
           echo "${{ secrets.CPANEL_SSH_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
 
-          ssh-keyscan -p ${{ secrets.CPANEL_PORT }} \
+          ssh-keyscan \
+          -p ${{ secrets.CPANEL_PORT }} \
           ${{ secrets.CPANEL_HOST }} >> ~/.ssh/known_hosts
 
 
-      # 7. Deploy menggunakan SCP
+      # Deploy to cPanel
       - name: Upload to cPanel
+        working-directory: .
         run: |
 
           scp -r \
           -P ${{ secrets.CPANEL_PORT }} \
-          build/jaspr/* \
+          deffcon/build/jaspr/* \
           ${{ secrets.CPANEL_USER }}@${{ secrets.CPANEL_HOST }}:${{ secrets.CPANEL_PATH }}
-
-
-      # 8. Optional: cleanup old files
-      # Jika ingin hapus file lama sebelum upload,
-      # aktifkan bagian ini
-
-      # - name: Clean cPanel directory
-      #   run: |
-      #     ssh \
-      #     -p ${{ secrets.CPANEL_PORT }} \
-      #     ${{ secrets.CPANEL_USER }}@${{ secrets.CPANEL_HOST }} \
-      #     "rm -rf ${{ secrets.CPANEL_PATH }}/*"
