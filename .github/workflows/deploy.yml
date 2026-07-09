@@ -1,0 +1,152 @@
+name: Build and Deploy Deffcon
+
+on:
+  push:
+    branches:
+      - main
+
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    env:
+      RELEASE_NAME: release-${{ github.run_number }}-${{ github.run_attempt }}
+
+    steps:
+
+      ##################################################
+      # Checkout
+      ##################################################
+
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      ##################################################
+      # Setup Dart
+      ##################################################
+
+      - name: Setup Dart
+        uses: dart-lang/setup-dart@v1
+        with:
+          sdk: "3.12.0"
+
+      ##################################################
+      # Activate Jaspr CLI
+      ##################################################
+
+      - name: Activate Jaspr CLI
+        run: |
+          dart pub global activate packages/jaspr_cli --source path
+          echo "$HOME/.pub-cache/bin" >> $GITHUB_PATH
+
+      ##################################################
+      # Install Workspace Dependencies
+      ##################################################
+
+      - name: Install Dependencies
+        run: dart pub get
+
+      ##################################################
+      # Build Website
+      ##################################################
+
+      - name: Build Deffcon
+        working-directory: deffcon
+        run: jaspr build
+
+      ##################################################
+      # Setup SSH
+      ##################################################
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+
+          chmod 600 ~/.ssh/id_rsa
+
+          ssh-keyscan \
+            -p ${{ secrets.PORT }} \
+            ${{ secrets.HOST }} >> ~/.ssh/known_hosts
+
+      ##################################################
+      # Create Release Folder
+      ##################################################
+
+      - name: Create Release Folder
+        run: |
+          ssh \
+            -i ~/.ssh/id_rsa \
+            -p ${{ secrets.PORT }} \
+            ${{ secrets.USERNAME }}@${{ secrets.HOST }} << EOF
+
+          mkdir -p ~/releases/${RELEASE_NAME}
+          mkdir -p ~/backups
+
+          EOF
+
+      ##################################################
+      # Upload Build
+      ##################################################
+
+      - name: Upload Build
+        run: |
+          scp \
+            -i ~/.ssh/id_rsa \
+            -P ${{ secrets.PORT }} \
+            -r deffcon/build/jaspr/. \
+            ${{ secrets.USERNAME }}@${{ secrets.HOST }}:~/releases/${RELEASE_NAME}/
+
+      ##################################################
+      # Deploy
+      ##################################################
+
+      - name: Deploy Website
+        run: |
+          ssh \
+            -i ~/.ssh/id_rsa \
+            -p ${{ secrets.PORT }} \
+            ${{ secrets.USERNAME }}@${{ secrets.HOST }} << EOF
+
+          set -e
+
+          BACKUP=~/backups/backup-\$(date +%Y%m%d-%H%M%S)
+
+          mkdir -p \$BACKUP
+
+          shopt -s dotglob
+
+          for item in ~/public_html/*; do
+
+            name=\$(basename "\$item")
+
+            case "\$name" in
+              cgi-bin|.well-known|.htaccess|.user.ini|php.ini)
+                ;;
+              *)
+                cp -a "\$item" \$BACKUP/
+                ;;
+            esac
+
+          done
+
+          find ~/public_html -mindepth 1 \
+            ! -name "cgi-bin" \
+            ! -name ".well-known" \
+            ! -name ".htaccess" \
+            ! -name ".user.ini" \
+            ! -name "php.ini" \
+            -exec rm -rf {} +
+
+          cp -a ~/releases/${RELEASE_NAME}/. ~/public_html/
+
+          rm -rf ~/releases/${RELEASE_NAME}
+
+          find ~/backups -maxdepth 1 -type d -mtime +7 -exec rm -rf {} +
+
+          find ~/releases -maxdepth 1 -type d -mtime +7 -exec rm -rf {} +
+
+          EOF
