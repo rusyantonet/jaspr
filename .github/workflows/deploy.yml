@@ -13,69 +13,37 @@ jobs:
 
     runs-on: ubuntu-latest
 
-    defaults:
-      run:
-        working-directory: deffcon
 
     steps:
 
-      # Checkout repository
       - name: Checkout repository
         uses: actions/checkout@v4
 
 
-      # Setup Dart SDK
       - name: Setup Dart SDK
         uses: dart-lang/setup-dart@v1
         with:
           sdk: "3.12.0"
 
 
-      # Install Jaspr CLI
       - name: Install Jaspr CLI
         run: |
           dart pub global activate jaspr_cli 0.23.1
           echo "$HOME/.pub-cache/bin" >> $GITHUB_PATH
 
 
-      # Check project structure
-      - name: Check project
+      - name: Check deffcon folder
         run: |
-          pwd
           ls -la
-          cat pubspec.yaml
+          ls -la deffcon
+          cat deffcon/pubspec.yaml
 
 
-      # Get dependencies
       - name: Get dependencies
+        working-directory: deffcon
         run: dart pub get
 
 
-      # Build Jaspr
       - name: Build Jaspr
+        working-directory: deffcon
         run: jaspr build
-
-
-      # Setup SSH
-      - name: Setup SSH
-        working-directory: .
-        run: |
-          mkdir -p ~/.ssh
-
-          echo "${{ secrets.CPANEL_SSH_KEY }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-
-          ssh-keyscan \
-          -p ${{ secrets.CPANEL_PORT }} \
-          ${{ secrets.CPANEL_HOST }} >> ~/.ssh/known_hosts
-
-
-      # Deploy to cPanel
-      - name: Upload to cPanel
-        working-directory: .
-        run: |
-
-          scp -r \
-          -P ${{ secrets.CPANEL_PORT }} \
-          deffcon/build/jaspr/* \
-          ${{ secrets.CPANEL_USER }}@${{ secrets.CPANEL_HOST }}:${{ secrets.CPANEL_PATH }}
