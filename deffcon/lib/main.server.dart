@@ -74,7 +74,7 @@ void main() {
               // Enables switching between light and dark mode.
               ThemeToggle(),
               // Shows github stats.
-              GitHubButton(repo: 'rusyantonet/deffcon'),
+              GitHubButton(repo: 'rusyantonet/jaspr'),
             ],
           ),
           footer: Navbar(),

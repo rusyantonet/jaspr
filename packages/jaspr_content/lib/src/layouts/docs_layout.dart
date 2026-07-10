@@ -80,7 +80,7 @@ class DocsLayout extends PageLayoutBase {
         css('&').styles(
           position: Position.fixed(top: Unit.zero, left: Unit.zero, right: Unit.zero),
           zIndex: ZIndex(10),
-          raw: {'backdrop-filter': 'blur(8px)'},
+          backgroundColor: ContentColors.background,
         ),
       ]),
       css('.main-container', [
@@ -171,7 +171,7 @@ class DocsLayout extends PageLayoutBase {
             css('aside.toc', [
               css('&').styles(display: Display.none, position: Position.relative(), width: 17.rem),
               css.media(MediaQuery.all(minWidth: 1280.px), [css('&').styles(display: Display.block)]),
-              css('> div', [css('&').styles(position: Position.sticky(top: 6.rem))]),
+              css('> div', [css('&').styles(position: Position.sticky(top: 9.rem))]),
               css('h3').styles(
                 margin: Margin.only(bottom: .5.rem),
                 opacity: 0.75,
