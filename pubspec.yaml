@@ -1,6 +1,6 @@
-name: jaspr_workspace
+name: rusyanto_jaspr_workspace
 publish_to: none
-repository: https://github.com/schultek/jaspr
+repository: https://github.com/rusyantonet/jaspr
 
 environment:
   sdk: ">=3.8.0 <4.0.0"

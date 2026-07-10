@@ -3,28 +3,28 @@
 ## New contributor guide
 
 To get an overview of the project, read the [README](README.md)
-and [Documentation](https://docs.jaspr.site).
+and [Documentation](https://rusyanto.space).
 
 ## What to contribute
 
 We welcome all contributions to the project, however some contributions are better suited
 for new contributors or easier to get accepted.
 
-Read [Contributing Docs](https://docs.jaspr.site/going_further/contributing) for some guidance on the types of possible contributions.
-
+<!--
 ## Issues
 
 ### Create a new issue
 
-If you spot a problem, [search if an issue already exists](https://github.com/schultek/jaspr/issues). If a related issue doesn't exist, you can [open a new issue](https://github.com/schultek/jaspr/issues/new).
+If you spot a problem, [search if an issue already exists](https://github.com/rusyantonet/jaspr/issues). If a related issue doesn't exist, you can [open a new issue](https://github.com/rusyantonet/jaspr/issues/new).
 
 For other contributions like documentation, examples, etc. please also open an issue so we know what you want to work on and discuss any details.
 
 #### Solve an issue
 
-Scan through our [existing issues](https://github.com/schultek/jaspr/issues) to find one that interests you.
+Scan through our [existing issues](https://github.com/rusyantonet/jaspr/issues) to find one that interests you.
 If you find an issue to work on, first comment on it to express interest in solving it.
 Then you are welcome to open a PR with a fix.
+-->
 
 ## Setup and running
 

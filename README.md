@@ -1,4 +1,4 @@
-[![Banner](/assets/banner.png)](https://rusyanto.com)
+[![Banner](/assets/banner.png)](https://docs.jaspr.site)
 
 <p align="center">
   <a href="https://github.com/sponsors/schultek"><img src="https://img.shields.io/badge/sponsor-30363D?style=for-the-badge&logo=GitHub-Sponsors&logoColor=#white" alt="sponsor"></a>
@@ -87,18 +87,18 @@ Rather, it embraces these differences to give the best of both worlds.
 
 - **/apps**: Production apps built with Jaspr.
   - **/jaspr_pad**: Online Editor and Playground inspired by DartPad, built with Jaspr. Hosted at [playground.jaspr.site](https://playground.jaspr.site).
-  - **/website**: The Jaspr website, built with Jaspr itself. Hosted at [jaspr.site](https://jaspr.site).
+  - **/website**: The Jaspr website, built with Jaspr itself. Hosted at [jaspr.site].
 - **/assets**: Branding images and other assets for Jaspr.
-- **/docs**: Documentation hosted at [docs.jaspr.site](https://docs.jaspr.site).
+- **/docs**: Documentation hosted at [docs.jaspr.site].
 - **/examples**: Examples for showcasing different Jaspr features.
 - **/packages**:
   - **/jaspr**: The core framework package.
   - **/jaspr_builder**: Code-generation builders for Jaspr.
   - **/jaspr_cli**: The command line interface of Jaspr.
-  - **/jaspr_content**: Jaspr plugin for building content-driven sites like documentation, blogs, or marketing pages. Documented at [docs.jaspr.site/content](https://docs.jaspr.site/content).
+  - **/jaspr_content**: Jaspr plugin for building content-driven sites like documentation, blogs, or marketing pages.
   - **/jaspr_flutter_embed**: Flutter element embedding bindings for Jaspr.
   - **/jaspr_lints**: A collection of lints and assists for Jaspr projects.
   - **/jaspr_riverpod**: An unofficial Riverpod implementation for Jaspr.
   - **/jaspr_router**: A router implementation for Jaspr.
-  - **/jaspr_serverpod**: An official Jaspr integration for [Serverpod](serverpod.dev).
+  - **/jaspr_serverpod**: An official Jaspr integration for Serverpod.
   - **/jaspr_test**: A testing package for Jaspr.
