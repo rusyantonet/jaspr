@@ -47,3 +47,21 @@ jobs:
       - name: Build Jaspr
         working-directory: deffcon
         run: jaspr build
+
+      - name: Inspect build output
+        working-directory: deffcon
+        run: |
+          echo "Current directory:"
+          pwd
+
+          echo "Build directory:"
+          ls -la build || true
+
+          echo "Build/jaspr:"
+          ls -la build/jaspr || true
+
+          echo "Find index.html:"
+          find build -name index.html || true
+
+          echo "Find main.dart.js:"
+          find build -name "*.js" || true
