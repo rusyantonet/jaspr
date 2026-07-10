@@ -146,7 +146,7 @@ class DocsLayout extends PageLayoutBase {
               css('&').styles(
                 minWidth: Unit.zero,
                 maxWidth: 80.rem,
-                padding: Padding.only(right: Unit.zero),
+                padding: Padding.only(right: Unit.zero, bottom: 4.rem),
                 flex: Flex(grow: 1, shrink: 1, basis: 0.percent),
               ),
               css.media(MediaQuery.all(minWidth: 1280.px), [css('&').styles(padding: Padding.only(right: 3.rem))]),
