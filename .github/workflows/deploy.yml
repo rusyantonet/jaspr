@@ -7,61 +7,83 @@ on:
 
   workflow_dispatch:
 
-
 jobs:
   build-deploy:
-
     runs-on: ubuntu-latest
 
-
     steps:
-
+      # Checkout source
       - name: Checkout repository
         uses: actions/checkout@v4
 
-
+      # Setup Dart
       - name: Setup Dart SDK
         uses: dart-lang/setup-dart@v1
         with:
           sdk: "3.12.0"
 
+      # Cache Dart packages
+      - name: Cache Pub Cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.pub-cache
+          key: ${{ runner.os }}-pub-${{ hashFiles('**/pubspec.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pub-
 
+      # Install Jaspr CLI
       - name: Install Jaspr CLI
         run: |
           dart pub global activate jaspr_cli 0.23.1
           echo "$HOME/.pub-cache/bin" >> $GITHUB_PATH
+          jaspr --version
 
-
-      - name: Check deffcon folder
-        run: |
-          ls -la
-          ls -la deffcon
-          cat deffcon/pubspec.yaml
-
-
-      - name: Get dependencies
+      # Install dependencies
+      - name: Dart Pub Get
         working-directory: deffcon
         run: dart pub get
 
-
+      # Build Website
       - name: Build Jaspr
         working-directory: deffcon
         run: jaspr build
 
-      - name: Inspect build output
-        working-directory: deffcon
+      # Setup SSH
+      - name: Configure SSH
         run: |
-          echo "Current directory:"
-          pwd
+          mkdir -p ~/.ssh
 
-          echo "Build directory:"
-          ls -la build || true
+          echo "${{ secrets.CPANEL_SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
 
-          echo "Build/jaspr:"
-          ls -la build/jaspr || true
+          ssh-keyscan -p ${{ secrets.CPANEL_PORT }} \
+            ${{ secrets.CPANEL_HOST }} >> ~/.ssh/known_hosts
 
-          echo "Find index.html:"
-          find build -name index.html || true
+      # (Opsional) Bersihkan folder tujuan
+      - name: Clean Remote Directory
+        run: |
+          ssh \
+            -p ${{ secrets.CPANEL_PORT }} \
+            ${{ secrets.CPANEL_USER }}@${{ secrets.CPANEL_HOST }} \
+            "find '${{ secrets.CPANEL_PATH }}' \
+            -mindepth 1 \
+            ! -name '.htaccess' \
+            ! -name '.well-known' \
+            -exec rm -rf {} +"
 
-          echo "Find main.dart.js:"
-          find build -name "*.js" || true
+      # Upload hasil build
+      - name: Deploy to cPanel
+        run: |
+          scp \
+            -P ${{ secrets.CPANEL_PORT }} \
+            -r \
+            deffcon/build/jaspr/* \
+            ${{ secrets.CPANEL_USER }}@${{ secrets.CPANEL_HOST }}:${{ secrets.CPANEL_PATH }}/
+
+      # Verifikasi deployment
+      - name: Verify Remote Files
+        run: |
+          ssh \
+            -p ${{ secrets.CPANEL_PORT }} \
+            ${{ secrets.CPANEL_USER }}@${{ secrets.CPANEL_HOST }} \
+            "ls -lah '${{ secrets.CPANEL_PATH }}'"
