@@ -23,6 +23,11 @@ class Navbar extends StatelessComponent {
           [Component.text('MineLink')],
         ),
         a(
+          href: '/minesafedrive',
+          classes: location.startsWith('/minesafedrive') ? 'active' : null,
+          [Component.text('MineSafeDrive')],
+        ),
+        a(
           href: '/weighbridge',
           classes: location.startsWith('/weighbridge') ? 'active' : null,
           [Component.text('Weighbridge')],

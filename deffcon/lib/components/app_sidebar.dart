@@ -81,6 +81,26 @@ class AppSidebar extends StatelessComponent {
         ]);
     }
 
+    if (currentRoute.startsWith('/minesafedrive')) {
+      return Sidebar(
+        groups: [
+          SidebarGroup(
+            title: 'MineSafeDrive',
+            links: [
+              SidebarLink(
+                text: 'Overview',
+                href: '/minesafedrive',
+              ),
+              SidebarLink(
+                text: 'Requirements',
+                href: '/minesafedrive/requirements',
+              ),
+            ],
+          ),
+        ],
+      );
+    }
+
     if (currentRoute.startsWith('/weighbridge')) {
       return Sidebar(
         groups: [
