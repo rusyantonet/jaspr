@@ -22,15 +22,6 @@ jobs:
         with:
           sdk: "3.12.0"
 
-      # Cache Dart packages
-      - name: Cache Pub Cache
-        uses: actions/cache@v4
-        with:
-          path: ~/.pub-cache
-          key: ${{ runner.os }}-pub-${{ hashFiles('**/pubspec.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-pub-
-
       # Install Jaspr CLI
       - name: Install Jaspr CLI
         run: |
@@ -41,13 +32,22 @@ jobs:
       # Install dependencies
       - name: Dart Pub Get
         working-directory: deffcon
-        run: dart pub get
+        run: |
+          dart pub get
+
+      # Clean previous build artifacts
+      - name: Clean Build
+        working-directory: deffcon
+        run: |
+          rm -rf build
+          rm -rf .dart_tool/build
 
       # Build Website
       - name: Build Jaspr
         working-directory: deffcon
-        run: jaspr build
-          
+        run: |
+          jaspr build
+
       # Setup SSH
       - name: Configure SSH
         run: |
@@ -59,7 +59,7 @@ jobs:
           ssh-keyscan -p ${{ secrets.CPANEL_PORT }} \
             ${{ secrets.CPANEL_HOST }} >> ~/.ssh/known_hosts
 
-      # (Opsional) Bersihkan folder tujuan
+      # Clean remote directory
       - name: Clean Remote Directory
         run: |
           ssh \
@@ -71,7 +71,7 @@ jobs:
             ! -name '.well-known' \
             -exec rm -rf {} +"
 
-      # Upload hasil build
+      # Upload build
       - name: Deploy to cPanel
         run: |
           scp \
@@ -80,7 +80,7 @@ jobs:
             deffcon/build/jaspr/* \
             ${{ secrets.CPANEL_USER }}@${{ secrets.CPANEL_HOST }}:${{ secrets.CPANEL_PATH }}/
 
-      # Verifikasi deployment
+      # Verify deployment
       - name: Verify Remote Files
         run: |
           ssh \
