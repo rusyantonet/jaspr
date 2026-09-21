@@ -38,16 +38,22 @@ jobs:
           echo "$HOME/.pub-cache/bin" >> $GITHUB_PATH
           jaspr --version
 
-      # Install dependencies
+      - name: Stop stale Jaspr processes
+        working-directory: deffcon
+        run: |
+          pkill -f 'jaspr|dart.*jaspr' || true
+          rm -rf .dart_tool build
+
       - name: Dart Pub Get
         working-directory: deffcon
         run: dart pub get
 
-      # Build Website
       - name: Build Jaspr
         working-directory: deffcon
-        run: jaspr build
-
+        run: |
+          pkill -f 'jaspr|dart.*jaspr' || true
+          jaspr build
+          
       # Setup SSH
       - name: Configure SSH
         run: |
