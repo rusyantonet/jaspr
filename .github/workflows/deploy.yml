@@ -22,31 +22,31 @@ jobs:
         with:
           sdk: "3.12.0"
 
-      # Install Jaspr CLI
-      - name: Install Jaspr CLI
+      # Get workspace dependencies
+      - name: Dart Pub Get
+        run: dart pub get
+
+      # Activate LOCAL Jaspr CLI
+      - name: Activate Local Jaspr CLI
         run: |
-          dart pub global activate jaspr_cli 0.23.1
-          echo "$HOME/.pub-cache/bin" >> $GITHUB_PATH
+          dart pub global activate packages/jaspr_cli --source=path
+          echo "$HOME/.pub-cache/bin" >> "$GITHUB_PATH"
+
+      # Verify Jaspr CLI
+      - name: Verify Jaspr
+        run: |
+          which jaspr
           jaspr --version
 
-      # Install dependencies
-      - name: Dart Pub Get
+      # Clean Jaspr build
+      - name: Clean Jaspr
         working-directory: deffcon
-        run: |
-          dart pub get
-
-      # Clean previous build artifacts
-      - name: Clean Build
-        working-directory: deffcon
-        run: |
-          rm -rf build
-          rm -rf .dart_tool/build
+        run: jaspr clean
 
       # Build Website
       - name: Build Jaspr
         working-directory: deffcon
-        run: |
-          jaspr build
+        run: jaspr build
 
       # Setup SSH
       - name: Configure SSH
