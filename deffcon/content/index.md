@@ -2,7 +2,7 @@
 title: Main Page!
 description: A placeholder page for your new documentation site.
 ---
-
+Ini adalah hasil edit dari GitHub
 This is the starting point for your brand new documentation site, powered by the awesome `jaspr_content` package! Jaspr Content makes it easy to create beautiful and functional documentation. You can learn more about its features by visiting the [official documentation]({{links.docs}}).
 
 ## Getting Started
