@@ -85,15 +85,61 @@ class AppSidebar extends StatelessComponent {
       return Sidebar(
         groups: [
           SidebarGroup(
-            title: 'MineSafeDrive',
+
             links: [
               SidebarLink(
                 text: 'Overview',
                 href: '/minesafedrive',
               ),
               SidebarLink(
-                text: 'Requirements',
-                href: '/minesafedrive/requirements',
+                text: 'Architecture',
+                href: '/minesafedrive/architecture',
+              ),
+              SidebarLink(
+                text: 'Hardware',
+                href: '/minesafedrive/hardware',
+              ),
+              SidebarLink(
+                text: 'Software',
+                href: '/minesafedrive/software',
+              ),
+            ],
+          ),
+          SidebarGroup(
+            title: 'Deployment',
+            links: [
+              SidebarLink(
+                text: 'Installation',
+                href: '/minesafedrive/installation',
+              ),
+              SidebarLink(
+                text: 'Configuration',
+                href: '/minesafedrive/configuration',
+              ),
+              SidebarLink(
+                text: 'Commissioning',
+                href: '/minesafedrive/commissioning',
+              ),
+            ],
+          ),
+          SidebarGroup(
+            title: 'Operation',
+            links: [
+              SidebarLink(
+                text: 'Network & Integration',
+                href: '/minesafedrive/network-integration',
+              ),
+              SidebarLink(
+                text: 'Maintenance',
+                href: '/minesafedrive/maintenance',
+              ),
+              SidebarLink(
+                text: 'Troubleshooting',
+                href: '/minesafedrive/troubleshooting',
+              ),
+              SidebarLink(
+                text: 'Technical Reference',
+                href: '/minesafedrive/technical-reference',
               ),
             ],
           ),
